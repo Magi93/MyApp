@@ -12733,11 +12733,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Doing\\CORE\\WebApplication2\\WebApplication2\\WebApplication2.csproj",
+      "projectUniqueName": "D:\\Doing\\git\\MyApp\\ASP.Net\\Web1\\WebApplication2\\WebApplication2.csproj",
       "projectName": "WebApplication2",
-      "projectPath": "D:\\Doing\\CORE\\WebApplication2\\WebApplication2\\WebApplication2.csproj",
+      "projectPath": "D:\\Doing\\git\\MyApp\\ASP.Net\\Web1\\WebApplication2\\WebApplication2.csproj",
       "packagesPath": "C:\\Users\\mageshwari.e\\.nuget\\packages\\",
-      "outputPath": "D:\\Doing\\CORE\\WebApplication2\\WebApplication2\\obj\\",
+      "outputPath": "D:\\Doing\\git\\MyApp\\ASP.Net\\Web1\\WebApplication2\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

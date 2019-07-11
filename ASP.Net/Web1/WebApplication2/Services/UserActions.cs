@@ -71,69 +71,34 @@ namespace WebApplication2.Services
             return response;
         }
 
-        public string ValidatePassword(string password)
+        public string ValidatePassword(string cipherPassword)
         {
-            var pwd = IsPasswordValid(password).ToString();
-
-            return pwd;
-        }
-        public static string IsPasswordValid(string cipherPassword)
-        {
-            //string[] parts = saltHash.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-
-            ////if (parts.Length != 2)
-            ////    return false;
-            //byte[] buf = Convert.FromBase64String(parts[0]);
-            //Rfc2898DeriveBytes deriver2898 = new Rfc2898DeriveBytes(password.Trim(), buf, 10000);
-            //string computedHash = Convert.ToBase64String(deriver2898.GetBytes(16));
-            //return parts[1].Equals(computedHash);
             byte[] salt = new byte[128 / 8];
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(salt);
             }
 
-            string plainText = Cryptography.Decrypt
-       (
-           cipherPassword,
-           "TestPassphrase",
-           salt.ToString(),
-           "SHA256",
-           10000,              // can be any number
-           "!1A3g2D4s9K556g7",// must be 16 bytes
-           256                // can be 192 or 128
-       );
+            string plainText = Cryptography.Decrypt(
+                cipherPassword,
+                "TestPassphrase",
+                salt.ToString(),
+                "SHA256",
+                10000,  //can be any number
+                "!1A3g2D4s9K556g7",// must be 16 bytes
+                256                // can be 192 or 128
+                );
             return plainText;
         }
-        public static string base64Decode(string sData) //Decode    
-        {
-            try
-            {
-                var encoder = new System.Text.UTF8Encoding();
-                System.Text.Decoder utf8Decode = encoder.GetDecoder();
-                byte[] todecodeByte = Convert.FromBase64String(sData);
-                int charCount = utf8Decode.GetCharCount(todecodeByte, 0, todecodeByte.Length);
-                char[] decodedChar = new char[charCount];
-                utf8Decode.GetChars(todecodeByte, 0, todecodeByte.Length, decodedChar, 0);
-                string result = new String(decodedChar);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in base64Decode" + ex.Message);
-            }
-        }
+
         public string GeneratePassword(string password)
         {
-
             // generate a 128-bit salt using a secure PRNG
             byte[] salt = new byte[128 / 8];
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(salt);
             }
-
-
             // derive a 256-bit subkey (use HMACSHA1 with 10,000 iterations)
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: password,
@@ -141,20 +106,18 @@ namespace WebApplication2.Services
                 prf: KeyDerivationPrf.HMACSHA1,
                 iterationCount: 10000,
                 numBytesRequested: 256 / 8));
-
             //return hashed;
 
-
             string cipherText = Cryptography.Encrypt
-        (
-            password,
-            "TestPassphrase",
-            salt.ToString(),
-            "SHA256",
-            10000,
-            "!1A3g2D4s9K556g7",
-            256
-        );
+                                (
+                                 password,
+                                "TestPassphrase",
+                                 salt.ToString(),
+                                 "SHA256",
+                                 10000,
+                                 "!1A3g2D4s9K556g7",
+                                 256
+                                );
             return cipherText;
         }
 
