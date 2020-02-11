@@ -19,11 +19,13 @@ namespace WebApplication2.Services
     {
         IConfiguration _config { get; }
         private readonly string connectionString;
+
         public UserActions(IConfiguration config)
         {
             _config = config;
             connectionString = _config.GetConnectionString("DefaultConnection");
         }
+
         public async Task<ApiResponse> Authenticate(string username, string password)
         {
             var response = new ApiResponse();
@@ -69,6 +71,124 @@ namespace WebApplication2.Services
             //user.Password = null;
 
             return response;
+        }
+
+        public async Task<ApiResponse> GetAllUser()
+        {
+            try
+            {
+                string procedureName = "[usp_GetAllUsers]";
+                var response = new ApiResponse();
+                var result = new List<User>();
+                SqlConnection con = new SqlConnection(connectionString);
+                if (con.State != ConnectionState.Open)
+                    con.Open();
+
+                using (SqlCommand command = new SqlCommand(procedureName, con))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    //command.Parameters.Add(new SqlParameter("@Country", country));
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            User user = new User();
+                            user.Id = Convert.ToInt32(reader["id"]);
+                            user.UserName = reader["username"].ToString();
+                            user.Email = reader["email"].ToString();
+                            user.Password = reader["password"].ToString();
+                            user.Role = Convert.ToInt32(reader["role"]);
+                            user.AddedOn = Convert.ToDateTime(reader["addedon"]);
+                            user.AddedBy = Convert.ToInt32(reader["addedby"]);
+                            user.Active = Convert.ToBoolean(reader["Active"]);
+                            result.Add(user);
+                        }
+                    }
+                }
+                response.Response = result;
+                response.ResponseCode = System.Net.HttpStatusCode.OK;
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                var response = new ApiResponse();
+                response.Response = null;
+                response.ResponseCode = System.Net.HttpStatusCode.InternalServerError;
+                response.Message = ex.Message;
+                return response;
+                throw ex;
+            }
+        }
+
+        public async Task<ApiResponse> Insert(PostUser user)
+        {
+            var response = new ApiResponse();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_AddUser", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@userName", user.UserName);
+                    cmd.Parameters.AddWithValue("@email", user.Email);
+                    cmd.Parameters.AddWithValue("@password", GeneratePassword(user.Password));
+                    cmd.Parameters.AddWithValue("@role", user.Role);
+                    cmd.Parameters.AddWithValue("@addedBy", user.AddedBy);
+                    await con.OpenAsync();
+                    cmd.ExecuteNonQuery();
+                    con.Close();
+                }
+
+                response.Response = user;
+                response.Message = "User has been added successfully.";
+                response.ResponseCode = System.Net.HttpStatusCode.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Response = null;
+                response.Message = ex.Message;
+                response.ResponseCode = System.Net.HttpStatusCode.BadRequest;
+                return response;
+                throw ex;
+            }
+        }
+
+        public async Task<ApiResponse> Update(PostUser user)
+        {
+            var response = new ApiResponse();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connectionString))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_EditUser", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Id", user.Id);
+                    cmd.Parameters.AddWithValue("@userName", user.UserName);
+                    cmd.Parameters.AddWithValue("@email", user.Email);
+                    cmd.Parameters.AddWithValue("@password", GeneratePassword(user.Password));
+                    cmd.Parameters.AddWithValue("@role", user.Role);
+                    cmd.Parameters.AddWithValue("@addedBy", user.AddedBy);
+                    await con.OpenAsync();
+                    cmd.ExecuteNonQuery();
+                    con.Close();
+                }
+
+                response.Response = user;
+                response.Message = "User has been added successfully.";
+                response.ResponseCode = System.Net.HttpStatusCode.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Response = null;
+                response.Message = ex.Message;
+                response.ResponseCode = System.Net.HttpStatusCode.BadRequest;
+                return response;
+                throw ex;
+            }
         }
 
         public string ValidatePassword(string cipherPassword)
@@ -119,88 +239,6 @@ namespace WebApplication2.Services
                                  256
                                 );
             return cipherText;
-        }
-
-        public async Task<ApiResponse> Insert(PostUser user)
-        {
-            var response = new ApiResponse();
-            try
-            {
-                using (SqlConnection con = new SqlConnection(connectionString))
-                {
-                    SqlCommand cmd = new SqlCommand("usp_AddUser", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@userName", user.UserName);
-                    cmd.Parameters.AddWithValue("@email", user.Email);
-                    cmd.Parameters.AddWithValue("@password", GeneratePassword(user.Password));
-                    cmd.Parameters.AddWithValue("@role", user.Role);
-                    cmd.Parameters.AddWithValue("@addedBy", user.AddedBy);
-                    await con.OpenAsync();
-                    cmd.ExecuteNonQuery();
-                    con.Close();
-                }
-
-                response.Response = user;
-                response.Message = "User has been added successfully.";
-                response.ResponseCode = System.Net.HttpStatusCode.OK;
-                return response;
-            }
-            catch (Exception ex)
-            {
-                response.Response = null;
-                response.Message = ex.Message;
-                response.ResponseCode = System.Net.HttpStatusCode.BadRequest;
-                return response;
-                throw ex;
-            }
-        }
-        public async Task<ApiResponse> GetAllUser()
-        {
-            try
-            {
-                string procedureName = "[usp_GetAllUsers]";
-                var response = new ApiResponse();
-                var result = new List<User>();
-                SqlConnection con = new SqlConnection(connectionString);
-                if (con.State != ConnectionState.Open)
-                    con.Open();
-
-                using (SqlCommand command = new SqlCommand(procedureName, con))
-                {
-                    command.CommandType = CommandType.StoredProcedure;
-                    //command.Parameters.Add(new SqlParameter("@Country", country));
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            User user = new User();
-                            user.Id = Convert.ToInt32(reader["id"]);
-                            user.UserName = reader["username"].ToString();
-                            user.Email = reader["email"].ToString();
-                            user.Password = reader["password"].ToString();
-                            user.Role = Convert.ToInt32(reader["role"]);
-                            user.AddedOn = Convert.ToDateTime(reader["addedon"]);
-                            user.AddedBy = Convert.ToInt32(reader["addedby"]);
-                            user.Active = Convert.ToBoolean(reader["Active"]);
-                            result.Add(user);
-                        }
-                    }
-                }
-                response.Response = result;
-                response.ResponseCode = System.Net.HttpStatusCode.OK;
-                return response;
-
-            }
-            catch (Exception ex)
-            {
-                var response = new ApiResponse();
-                response.Response = null;
-                response.ResponseCode = System.Net.HttpStatusCode.InternalServerError;
-                response.Message = ex.Message;
-                return response;
-                throw ex;
-            }
         }
     }
 }
