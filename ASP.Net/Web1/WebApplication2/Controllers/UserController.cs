@@ -73,8 +73,10 @@ namespace WebApplication2.Controllers
 
         // PUT: api/User/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<ApiResponse> Put(int id, [FromBody] PostUser user)
         {
+            var res = await _userActions.Update(user);
+            return res;
         }
 
         // DELETE: api/ApiWithActions/5

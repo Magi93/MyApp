@@ -1,4 +1,4 @@
-<p>
+<!-- <p>
   user works!
   <a routerLink="/login" routerLinkActive="active">Sign in</a>
   <a routerLink="/register" routerLinkActive="active">Sign up</a>
@@ -9,4 +9,9 @@
   <a routerLink="/user/login" routerLinkActive="active">Sign in</a>
   <a routerLink="/user/register" routerLinkActive="active">Sign up</a>
 </p>
-<router-outlet></router-outlet>
+<router-outlet></router-outlet> -->
+<button (click)="callMethodOfChild()"></button>
+<app-registration
+  [msg]="messagetoChild"
+  (helloalert)="callMethodOfChild()"
+></app-registration>
